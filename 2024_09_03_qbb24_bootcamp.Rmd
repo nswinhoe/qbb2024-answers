@@ -8,6 +8,8 @@ Day1 Morning:
 ```{r}
 #load tidyverse
 library(tidyverse)
+library(ggplot2)
+
 
 #Load the GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt file 
 read_tsv("/data/learn/qb24/GTEx/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt")
@@ -178,20 +180,190 @@ ggplot( data= penguins, mapping = aes(x = factor(year),
 
 Afternoon assignment: 
 
+Q1 and Q2
 ```{r}
 #Load tidyverse, use read_delim() to read in sample-level metadata that was obtained from the GTEx Portal
-#GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt
 
-setwd("/home/nswinhoe/R/2024_qbb24_bootcamp")
+#read_delim("/data/learn/qb24/GTEx/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt")
 
+#this will show the first ~10 lines 
+head(df)
 
+#this will show more of the data and all the data categories
+glimpse(df)
+```
+
+Q3 and Q4
+```{r}
+#Use the filter() function to subset the dataset to only the RNA-seq data by selecting rows for which the SMGEBTCHT column contains the value "TruSeq.v1". TruSeq is a library preparation kit from Illumina.
+
+df_TruSeq = df  %>%
+  filter(SMGEBTCHT == "TruSeq.v1")
+
+#Plot the number of samples from each tissue (SMTSD) as a barplot. 
+library(ggplot2)
+
+# don't specify a 'y =' and R will do stat = count
+ggplot(data= df_TruSeq, 
+       mapping = aes(x = SMTSD))+
+  geom_bar() +
+  xlab("Tissue type") +
+  ylab("Sample count") +
+
+  theme(axis.text=element_text(size=10, color="black"),
+        axis.text.x=element_text(angle = 90),
+        axis.title=element_text(size=13),
+        axis.line = element_line(color="black"),
+        axis.ticks = element_line(color = "black", size =0.6),
+        axis.ticks.length=unit(.15, "cm"),
+        plot.title = element_text(size=13, hjust=0.5),
+        panel.grid.major=element_blank(), 
+        panel.grid.minor=element_blank(), 
+        panel.background = element_blank(),
+        legend.key = element_rect(colour = NA, fill = NA),
+        strip.background = element_blank())
 
 ```
 
+Q5
+```{r}
+#Plot the distribution of RNA integrity numbers across your samples. What type of plot is best for visualizing a single continuous distribution? 
+
+#RIN heading is called SMRIN
+
+# a histsogram is the best way to visualize a single continuous distribution
+ggplot(data = df_TruSeq, mapping = aes (x = SMRIN))+
+  geom_histogram() +
+  xlab("RIN scores") +
+  ylab("Sample count") +
+  
+  theme(axis.text=element_text(size=10, color="black"),
+        axis.title=element_text(size=13),
+        axis.line = element_line(color="black"),
+        axis.ticks = element_line(color = "black", size =0.6),
+        axis.ticks.length=unit(.15, "cm"),
+        plot.title = element_text(size=13, hjust=0.5),
+        panel.grid.major=element_blank(), 
+        panel.grid.minor=element_blank(), 
+        panel.background = element_blank(),
+        legend.key = element_rect(colour = NA, fill = NA),
+        strip.background = element_blank())
+
+#the shape of the distribution is unimodal with most samples having an RIN between 6 and 8. Fewer samples have an RIN above 8. 
+```
+
+Q6
+```{r}
+#Copy your code from above, but now plot the distribution of RIN, stratified by tissue
+
+ggplot(data = df_TruSeq, mapping = aes (x = SMRIN, fill = SMTSD))+
+  geom_histogram(position = "identity") +
+  xlab("RIN scores") +
+  ylab("Sample count") +
+  
+  theme(axis.text=element_text(size=10, color="black"),
+        axis.title=element_text(size=13),
+        axis.line = element_line(color="black"),
+        axis.ticks = element_line(color = "black", size =0.6),
+        axis.ticks.length=unit(.15, "cm"),
+        plot.title = element_text(size=13, hjust=0.5),
+        panel.grid.major=element_blank(), 
+        panel.grid.minor=element_blank(), 
+        panel.background = element_blank(),
+        legend.key = element_rect(colour = NA, fill = NA),
+        strip.background = element_blank())
+
+#Histograms are not good for distributions across groups
+#cells have a much higher RIN compared to who blood.The obervations probably come from the number of cells that were sampled  
+```
+
+Q7
+```{r}
+#Visualize the number of genes detected per sample, stratifying by tissue
+#genes detected is SMGNSDTC
+
+ggplot(data = df_TruSeq, mapping = aes (x = SMTSD, y = SMGNSDTC))+
+  geom_point() +
+  xlab("Tissue sample") +
+  ylab("Number of genes detected") +
+
+  theme(axis.text=element_text(size=10, color="black"),
+        axis.text.x=element_text(angle = 90),
+        axis.title=element_text(size=13),
+        axis.line = element_line(color="black"),
+        axis.ticks = element_line(color = "black", size =0.6),
+        axis.ticks.length=unit(.15, "cm"),
+        plot.title = element_text(size=13, hjust=0.5),
+        panel.grid.major=element_blank(), 
+        panel.grid.minor=element_blank(), 
+        panel.background = element_blank(),
+        legend.key = element_rect(colour = NA, fill = NA),
+        strip.background = element_blank())
+
+#Testis tissue sample has a high number of genes detected. This could be because of a high number of single read cells going into the dataset? 
+```
+
+Q8
+```{r}
+#Plot the relationship between ischemic time and RIN. SMTSISCH
+#Create sub-panels that stratify the data by tissue using facet_wrap(). 
+#Resize points to size = 0.5 and set the opacity to alpha = 0.5. 
+#Add linear trend lines to your plot with geom_smooth(method = "lm").
+
+
+ggplot(data = df_TruSeq, mapping = aes( x = SMRIN, y = SMTSISCH)) +
+  geom_point(size = 0.5, alpha = 0.5) +
+  xlab("RIN") +
+  ylab("Ischemic time (min)") +
+  geom_smooth(method = "lm") +
+  facet_wrap( ~ SMTSD) +
+
+  theme(axis.text=element_text(size=10, color="black"),
+        axis.title=element_text(size=13),
+        axis.line = element_line(color="black"),
+        axis.ticks = element_line(color = "black", size =0.6),
+        axis.ticks.length=unit(.15, "cm"),
+        plot.title = element_text(size=13, hjust=0.5),
+        panel.grid.major=element_blank(), 
+        panel.grid.minor=element_blank(), 
+        panel.background = element_blank(),
+        legend.key = element_rect(colour = NA, fill = NA),
+        strip.background = element_blank())
+
+#Broadly, amples are less degraded as ischemic time decreases. However, this is tissue specific. 
+```
+
+
+Q9
+```{r}
+#Copy answer from 8 above
+#modify it to color your points by autolysis score (SMATSSCR). 
+
+#Note that if we place aes(color = SMATSSCR) within the ggplot() portion of the code, it will attempt to apply this mapping to all geom_s, including geom_smooth. 
+
+#To avoid this, place aes(color = SMATSSCR) within the geom_point() portion of the code.
 
 
 
+ggplot(data = df_TruSeq, mapping = aes(x = SMRIN, y = SMTSISCH, color = SMATSSCR)) +
+  geom_point(mapping = aes(x = SMRIN, y = SMTSISCH, color = SMATSSCR), size = 0.5, alpha = 0.5) +
+  xlab("RIN") +
+  ylab("Ischemic time (min)") +
+  geom_smooth(mapping = aes(x = SMRIN, y = SMTSISCH), method = "lm", color = "black") +
+  facet_wrap( ~ SMTSD) +
 
+  theme(axis.text=element_text(size=10, color="black"),
+        axis.title=element_text(size=13),
+        axis.line = element_line(color="black"),
+        axis.ticks = element_line(color = "black", size =0.6),
+        axis.ticks.length=unit(.15, "cm"),
+        plot.title = element_text(size=13, hjust=0.5),
+        panel.grid.major=element_blank(), 
+        panel.grid.minor=element_blank(), 
+        panel.background = element_blank(),
+        legend.key = element_rect(colour = NA, fill = NA),
+        strip.background = element_blank())
+```
 
 
 
