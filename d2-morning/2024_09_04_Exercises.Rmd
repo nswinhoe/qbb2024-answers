@@ -1,0 +1,45 @@
+---
+title: "2024_09_04_Exercises"
+output: html_document
+date: "2024-09-04"
+---
+
+
+##Complete the following exercises using a combination of cut, sort, uniq, and grep
+
+```{r}
+#Tally the number of each gene_biotype in hg38-gene-metadata-feature.tsv. 
+cut -f 7 hg38-gene-metadata-feature.tsv | sort | uniq -c | wc -l
+# there are 39
+
+
+#How many protein_coding genes are there? 
+
+$ cut -f 7 hg38-gene-metadata-feature.tsv | sort | grep "protein_coding" | wc -l 
+#There are 19618
+
+#Pick one biotype you would want to learn more about and explain why.
+
+```
+
+
+
+```{r}
+#Which ensembl_gene_id in hg38-gene-metadata-go.tsv has the most go_ids? 
+
+cut -f 1 hg38-gene-metadata-go.tsv | uniq -c | sort -n
+
+# 273 ENSG00000168036
+
+
+
+#Create a new file that only contains rows corresponding to that gene_id, sorting the rows according to the name_1006 column. 
+
+ grep "ENSG00000168036" hg38-gene-metadata-go.tsv | sort -n > ENSG00000168036.txt
+
+
+#Describe what you think this gene does based on the GO terms.
+
+
+```
+
